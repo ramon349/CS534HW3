@@ -1,4 +1,4 @@
 import pstats
 from pstats import SortKey
 p = pstats.Stats('log')
-p.sort_stats(SortKey.CUMULATIVE).print_stats(20)
+p.sort_stats(SortKey.TIME).print_stats(20)

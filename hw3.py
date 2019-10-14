@@ -20,15 +20,17 @@ class decisionTree:
         combi = combinations(range(X.shape[1]),2)
         my_list = list()  
         counter = 0 
-        best_tuple = (-1*np.inf,0,0)
+        best_tuple = (-1*np.inf,0,0) 
+        best_pair = (0,0)
         for f1,f2 in combi:  
             current_cost  = self.eval_metrix(X[:,[f1,f2]],Y)  #shape of currenct_cos (c_cost,f1_t,f2_t)
-            if current_cost[0] > best_tuple[0]  and  ( current_cost[0] != math.inf or current_cost[0] != -1*math.inf):
-                best_tuple = current_cost
-            if counter >=2: 
+            if current_cost[0] > best_tuple[0]:
+                best_tuple = current_cost 
+                best_pair = (f1,f2)
+            if counter ==0: 
                 break 
             counter +=1 
-        return  best_tuple
+        return  (best_tuple[0],best_pair[0],best_pair[1],best_tuple[0],best_tuple[1])
 
     def eval_metrix(self,x,y): 
         f1_unique = self.inbetween_vals(np.unique(x[:,0]) )
@@ -60,9 +62,8 @@ class decisionTree:
         LL= 0
         for bucket in buckets:
             my_LL = self.get_bucket_performance(y[bucket]) 
-            if not math.isnan(my_LL): 
-                LL += my_LL 
-        if LL == math.inf: 
+            LL += my_LL 
+        if LL == math.inf or math.isnan(LL): 
             return (-1*math.inf,f1_val,f2_val) 
         else: 
             return (LL,f1_val,f2_val)
@@ -70,7 +71,7 @@ class decisionTree:
         if real_labels.size != 0: 
             common_class = sstats.mode(real_labels)  # self.get_common_label(real_labels) 
             correct = np.sum(real_labels == common_class)
-            incorrect = np.sum(real_labels != common_class) 
+            incorrect = real_labels.size - correct # instead of redoign the sum lets just get the difference np.sum(real_labels != common_class) 
             p = np.mean(real_labels)
             return correct*np.log(p)  + incorrect*np.log(1-p)
         else:  
@@ -79,7 +80,7 @@ class decisionTree:
         #this would be performnace for a single child node  so it would bea column of the decision table 
         #you would need a filtrer opteratio nusign the logicla labels to get only the labels of intetest
         # calcualte true positives, true negatives and so forth 
-    def get_common_label(self,y): 
+    def get_common_label(self,y):  
         u_labels = np.unique(y)
         class_counts = np.zeros((len(u_labels),2))  
         for i,label in enumerate(u_labels): 
