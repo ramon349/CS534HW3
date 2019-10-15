@@ -2,46 +2,54 @@ from itertools import combinations ,product
 import numpy as np 
 import math
 import scipy.stats as sstats
-
+import time 
 class decisionTree: 
-    def __init__(self,x,y,cost=None,depth=5): 
+    def __init__(self,x,y,cost=None,depth=5):  
         if depth ==0:  
             #handle case where we've reached the bottom 
             self.decision = sstats.mode(y) 
             self.left =None 
             self.right =None 
         #case where we are not the bottom and need to split 
-        print("hello cruel world")
         (cost,f1,f2,f1_val,f2_val) = self.get_best(x,y)
     def fit(self,X,y,cost='log',depth=5): 
         print("hi")
 
-    def get_best(self,X,Y): 
-        combi = combinations(range(X.shape[1]),2)
+    def get_best(self,X,Y):  
+        t = time.time() 
+        combi = combinations(range(X.shape[1]),2) 
         my_list = list()  
         counter = 0 
         best_tuple = (-1*np.inf,0,0) 
         best_pair = (0,0)
         for f1,f2 in combi:  
-            current_cost  = self.eval_metrix(X[:,[f1,f2]],Y)  #shape of currenct_cos (c_cost,f1_t,f2_t)
+            current_cost  = self.eval_metrix(X[:,[f1,f2]],Y)  #shape of currenct_cos (c_cost,f1_t,f2_t) 
+            print(f"finished one combination after {time.time() -t}")
             if current_cost[0] > best_tuple[0]:
                 best_tuple = current_cost 
                 best_pair = (f1,f2)
-            if counter ==0: 
-                break 
-            counter +=1 
         return  (best_tuple[0],best_pair[0],best_pair[1],best_tuple[0],best_tuple[1])
-
+    def inspect_x(self,x,y): 
+        print("---------comp-------------")
+        for i in range(2):
+            dist_1 = np.mean(x[y==1,i])
+            dist_2 = np.mean(x[y!=1,i]) 
+            print(f"hello the means are {dist_1} and {dist_2} ")  
     def eval_metrix(self,x,y): 
+        t = time.time() 
+        self.inspect_x(x,y)
         f1_unique = self.inbetween_vals(np.unique(x[:,0]) )
         f2_unique = self.inbetween_vals(np.unique(x[:,1]) ) 
         my_list = list() 
-        feat_pairs = product(f1_unique,f2_unique)  #let's look at every combination  of these feature values   
+        feat_pairs = list(product(f1_unique,f2_unique)  ) #let's look at every combination  of these feature values    
         best_tuple = (-1*np.inf,0,0)
+        print(f"Starting to evaluate feature pairs: {time.time() - t}")
         for f1,f2 in feat_pairs: 
-            current_cost = self.eval_cost(x,y,f1,f2) # shape of current loss (LL,f1_val,f2_val)
+            current_cost = self.eval_cost(x,y,f1,f2) # shape of current loss (LL,f1_val,f2_val) 
             if current_cost[0] > best_tuple[0] :
-                best_tuple = current_cost
+                best_tuple = current_cost  
+        print(f"Finished evaluating feature pairs: {time.time() - t } ") 
+        print(f"Total elements was {len(feat_pairs)}")
         return best_tuple
     def inbetween_vals(self,x): 
         inbetween = list()  
