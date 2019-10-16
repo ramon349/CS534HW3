@@ -11,10 +11,16 @@ class decisionTree:
             self.left =None 
             self.right =None 
         #case where we are not the bottom and need to split 
-        (cost,f1,f2,f1_val,f2_val) = self.get_best(x,y)
+        (cost,f1,f2,f1_val,f2_val) = self.get_best(x,y) 
+        breakpoint() 
+        print(f"With Cost we have obtained obtimal split to be ")
     def fit(self,X,y,cost='log',depth=5): 
-        print("hi")
-
+        print("hi") 
+    def generate_unique_values(self,x,y):
+        unique_list = list() 
+        for i in range( x.shape[1]):
+            unique_list.append( self.inbetween_vals(x[:,i],y))  
+        return unique_list
     def get_best(self,X,Y):  
         t = time.time() 
         combi = combinations(range(X.shape[1]),2) 
@@ -22,39 +28,44 @@ class decisionTree:
         counter = 0 
         best_tuple = (-1*np.inf,0,0) 
         best_pair = (0,0)
+        unique_list = self.generate_unique_values(X,Y)
+        i =0
         for f1,f2 in combi:  
-            current_cost  = self.eval_metrix(X[:,[f1,f2]],Y)  #shape of currenct_cos (c_cost,f1_t,f2_t) 
-            print(f"finished one combination after {time.time() -t}")
+            current_cost  = self.eval_metrix(X[:,[f1,f2]],Y,unique_list[f1],unique_list[f2])  #shape of currenct_cos (c_cost,f1_t,f2_t) 
+            print(f"finished {i} one combination after {time.time() -t}")
             if current_cost[0] > best_tuple[0]:
                 best_tuple = current_cost 
-                best_pair = (f1,f2)
+                best_pair = (f1,f2) 
+            i = i +1 
         return  (best_tuple[0],best_pair[0],best_pair[1],best_tuple[0],best_tuple[1])
-    def inspect_x(self,x,y): 
-        print("---------comp-------------")
-        for i in range(2):
-            dist_1 = np.mean(x[y==1,i])
-            dist_2 = np.mean(x[y!=1,i]) 
-            print(f"hello the means are {dist_1} and {dist_2} ")  
-    def eval_metrix(self,x,y): 
+    def eval_metrix(self,x,y,f1_unique,f2_unique): 
         t = time.time() 
-        self.inspect_x(x,y)
-        f1_unique = self.inbetween_vals(np.unique(x[:,0]) )
-        f2_unique = self.inbetween_vals(np.unique(x[:,1]) ) 
+        #self.inspect_x(x,y)
         my_list = list() 
         feat_pairs = list(product(f1_unique,f2_unique)  ) #let's look at every combination  of these feature values    
         best_tuple = (-1*np.inf,0,0)
-        print(f"Starting to evaluate feature pairs: {time.time() - t}")
+        #print(f"Starting to evaluate feature pairs: {time.time() - t}")
         for f1,f2 in feat_pairs: 
             current_cost = self.eval_cost(x,y,f1,f2) # shape of current loss (LL,f1_val,f2_val) 
             if current_cost[0] > best_tuple[0] :
                 best_tuple = current_cost  
-        print(f"Finished evaluating feature pairs: {time.time() - t } ") 
-        print(f"Total elements was {len(feat_pairs)}")
+        #jprint(f"Finished evaluating feature pairs: {time.time() - t } ") 
+        #print(f"Total elements was {len(feat_pairs)}")
         return best_tuple
-    def inbetween_vals(self,x): 
-        inbetween = list()  
-        for i in range(len(x)-1): 
-            inbetween.append( (x[i] + x[i+1] )/2)
+    def inbetween_vals(self,whole_x,y):  
+        c1_peak = np.mean(whole_x[y==1] ) 
+        c2_peak = np.mean(whole_x[y!=1])  
+        x = np.unique(whole_x)
+        if c1_peak > c2_peak: 
+            #c1 peak is the greatest 
+            potential_vals = x[ np.logical_and( x>=c2_peak , x <=c1_peak)]
+        else: 
+            potential_vals = x[ np.logical_and( x>=c1_peak , x<=c2_peak) ] 
+        inbetween = list()   
+        for i in range(len(potential_vals) -1): 
+            inbetween.append( (potential_vals[i] + potential_vals[i+1] )/2)   
+        if len(inbetween ) == 0 and len(potential_vals) >0:
+            inbetween.append(potential_vals[0])
         return inbetween
 
     def eval_cost(self,x,y,f1_val,f2_val):
