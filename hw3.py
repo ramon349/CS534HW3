@@ -59,21 +59,21 @@ class decisionTree:
         return unique_list
     def get_best(self,X,Y):  
         combi = combinations(range(X.shape[1]),2) 
-        best_tuple = (-1*np.inf,0,0) 
+        best_tuple = (np.inf,0,0) 
         best_pair = (0,0)
         unique_list = self.generate_unique_values(X)
         for f1,f2 in combi:  
             current_cost  = self.eval_metrix(X[:,[f1,f2]],Y,unique_list[f1],unique_list[f2])  #shape of currenct_cos (c_cost,f1_t,f2_t) 
-            if current_cost[0] > best_tuple[0]:
+            if current_cost[0] < best_tuple[0]:
                 best_tuple = current_cost 
                 best_pair = (f1,f2) 
         return  (best_tuple[0],best_pair[0],best_pair[1],best_tuple[1],best_tuple[2])
     def eval_metrix(self,x,y,f1_unique,f2_unique): 
         feat_pairs = list(product(f1_unique,f2_unique)  ) #let's look at every combination  of these feature values    
-        best_tuple = (-1*np.inf,0,0)
+        best_tuple = (np.inf,0,0)
         for f1,f2 in feat_pairs: 
             current_cost = self.eval_cost(x,y,f1,f2) # shape of current loss (LL,f1_val,f2_val) 
-            if current_cost[0] > best_tuple[0] :
+            if current_cost[0] < best_tuple[0] :
                 best_tuple = current_cost  
         return best_tuple
     def inbetween_vals(self,whole_x): 
@@ -105,23 +105,19 @@ class decisionTree:
             my_LL = self.get_bucket_performance(y[bucket]) 
             LL += my_LL 
         if LL == math.inf or math.isnan(LL): 
-            return (-1*math.inf,f1_val,f2_val) 
+            return (math.inf,f1_val,f2_val) 
         else: 
             return (LL,f1_val,f2_val)
     def get_bucket_performance(self,real_labels):  
         if real_labels.size != 0:  
-            p = np.average
-            common_class =1   # self.get_common_label(real_labels) 
-            TP = np.sum( real_labels == common_class) 
             p = np.mean(real_labels)
-            FP = np.sum(real_labels != common_class)   
-            out1 = TP*np.log(p) 
-            out2 = FP*np.log(p)
+            out1 = -1*p*np.log(p) 
+            out2 = -1*(1-p)*np.log(1-p) 
             if out1 == -1*math.inf: 
                 out1 = 0  
             if out2 == -1*math.inf: 
                 out2 = 0 
-            return out1 + out2
+            return real_labels.size*(out1 + out2)
         else:
             return 0
     def get_common_label(self,y):   
