@@ -7,7 +7,7 @@ from sklearn.linear_model import Ridge
 data = datasets.load_boston()
 
 (x,y) = (data.data,data.target)  
-model = DaRDecisionTree(x,y,depth=3)   
+model = DaRDecisionTree(x,y,depth=2)   
 predictions = np.zeros((x.shape[0],))
 for i in range(x.shape[0]):
     predictions[i] = model.predict(x[i,:].reshape((1,13)) ) 

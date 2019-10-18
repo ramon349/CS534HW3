@@ -5,14 +5,17 @@ import math
 import scipy.stats as sstats
 import time 
 class decisionTree: 
-    def __init__(self,x,y,cost=None,depth=2):  
-        if depth ==1:  
+    def __init__(self,cost=None,depth=2):
+        self.decision = 0 
+        self.depth =depth
+        self.children = None 
+    def fit(self,x,y):  
+        if self.depth ==1:  
             #handle case where we've reached the bottom 
             self.decision = sstats.mode(y).mode
             self.depth =0
             self.children = None 
         else: 
-            self.depth =depth
             self.decision = None 
             self.children =list() 
             #case where we are not the bottom and need to split 
@@ -29,9 +32,9 @@ class decisionTree:
             g_f2 = np.logical_not(l_f2) 
             buckets = [ np.logical_and(l_f1,l_f2),np.logical_and(l_f1,g_f2),np.logical_and(g_f1,l_f2),np.logical_and(g_f1,g_f2)]
             for b in buckets: 
-                self.children.append(decisionTree(x[b],y[b] ,depth=self.depth-1))
-    def fit(self,X,y,cost='log',depth=5):  
-        print("hi")  
+                mdl = decisionTree(depth =self.depth-1)  
+                mdl.fit(x[b],y[b])
+                self.children.append(mdl)
     def predict(self,x):
         if self.decision != None:
             return self.decision 
@@ -106,7 +109,8 @@ class decisionTree:
         else: 
             return (LL,f1_val,f2_val)
     def get_bucket_performance(self,real_labels):  
-        if real_labels.size != 0: 
+        if real_labels.size != 0:  
+            p = np.average
             common_class =1   # self.get_common_label(real_labels) 
             TP = np.sum( real_labels == common_class) 
             p = np.mean(real_labels)

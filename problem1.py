@@ -25,7 +25,8 @@ def binner(x,k=10):
 data = datasets.load_breast_cancer()
 (x,y) = (data.data,data.target)  
 binner(x,k=10)
-model = decisionTree(x,y,depth=2)   
+model = decisionTree(depth=2) 
+model.fit(x,y)
 predictions = np.zeros((x.shape[0],1) ) 
 for i in range(x.shape[0]):
     predictions[i] = model.predict(x[i,:]) 
