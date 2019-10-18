@@ -130,17 +130,19 @@ class decisionTree:
         class_counts.sort(axis=1)  
         return class_counts[-1,1]
 class DaRDecisionTree:
-    def __init__(self,x,y,depth=2): 
+    def __init__(self,x,y,depth=2):  
+        self.depth = depth 
+        self.decision =0 
+        self.children=None
+    def fit(self,x,y):
         t = time.time() 
-        if depth ==1:  
+        if self.depth ==1:  
             #handle case where we've reached the bottom 
             self.decision =  Ridge()
             self.decision.fit(x,y)
-            self.depth =0
             self.children = None 
         else:  
             self.children = list()
-            self.depth =depth
             self.decision = None 
             #case where we are not the bottom and need to split 
             (cost,f1,f1_val) = self.get_best(x,y) 
