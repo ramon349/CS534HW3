@@ -130,7 +130,7 @@ class decisionTree:
         class_counts.sort(axis=1)  
         return class_counts[-1,1]
 class DaRDecisionTree:
-    def __init__(self,x,y,depth=2):  
+    def __init__(self,depth=2):  
         self.depth = depth 
         self.decision =0 
         self.children=None
@@ -153,8 +153,10 @@ class DaRDecisionTree:
             l_f1 = x[:,f1] < f1_val 
             g_f1 =  np.logical_not(l_f1) 
             buckets = [l_f1,g_f1] 
-            for b in buckets: 
-                self.children.append(DaRDecisionTree(x[b],y[b] ,depth=self.depth-1)) 
+            for b in buckets:  
+                mdl = DaRDecisionTree( depth = self.depth -1 ) 
+                mdl.fit(x[b],y[b] ) 
+                self.children.append(mdl) 
     def predict(self,x):
         if self.decision != None:
             return self.decision.predict(x)
