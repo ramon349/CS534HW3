@@ -24,5 +24,6 @@ other_model_perf = mean_squared_error(y,predi)
 
 print(f"My model: {my_model} MSE . vs  other model: {other_model_perf}") 
 plt.plot(predictions)  
-plt.plot(y)
+plt.plot(y) 
+plt.legend(("Decision tree","actual data"))
 plt.show()

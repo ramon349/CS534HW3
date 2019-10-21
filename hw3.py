@@ -9,13 +9,14 @@ class decisionTree:
         self.decision = 0 
         self.depth =depth
         self.children = None 
-    def fit(self,x,y):  
-        if self.depth ==1:  
+        self.num_sample = 0 
+    def fit(self,x,y,num_sample=None):  
+        if self.depth ==0:  
             #handle case where we've reached the bottom 
-            self.decision = sstats.mode(y).mode
-            self.depth =0
+            self.decision = np.mean(y) #sstats.mode(y).mode
             self.children = None 
         else: 
+            self.num_sample =num_sample
             self.decision = None 
             self.children =list() 
             #case where we are not the bottom and need to split 
@@ -26,14 +27,14 @@ class decisionTree:
             self.feat_1_thresh = f1_val 
             self.feat_2 = f2 
             self.feat_2_thresh = f2_val 
-            l_f1 = x[:,f1] < f1_val 
-            l_f2 = x[:,f2] < f2_val 
+            l_f1 = x[:,f1] <= f1_val 
+            l_f2 = x[:,f2] <= f2_val 
             g_f1 =  np.logical_not(l_f1)
             g_f2 = np.logical_not(l_f2) 
             buckets = [ np.logical_and(l_f1,l_f2),np.logical_and(l_f1,g_f2),np.logical_and(g_f1,l_f2),np.logical_and(g_f1,g_f2)]
             for b in buckets: 
                 mdl = decisionTree(depth =self.depth-1)  
-                mdl.fit(x[b],y[b])
+                mdl.fit(x[b],y[b],num_sample=self.num_sample)
                 self.children.append(mdl)
     def predict(self,x):
         if self.decision != None:
@@ -44,13 +45,12 @@ class decisionTree:
             g_f1 =  np.logical_not(l_f1)
             g_f2 = np.logical_not(l_f2) 
             buckets = [ np.logical_and(l_f1,l_f2),np.logical_and(l_f1,g_f2),np.logical_and(g_f1,l_f2),np.logical_and(g_f1,g_f2)] 
-            if np.sum(buckets)>1:
-                breakpoint()
             for i,b in enumerate(buckets): 
                 if b:
                     return  self.children[i].predict(x)
     def generate_unique_values(self,x):
-        """ Instead of computing thresholds each time let's pre compute them 
+        """ Instead of computing thresholds each time let's pre compute them
+        by creating a list of unique values for each feature.
         x: our feature matrix 
         """
         unique_list = list() 
@@ -80,14 +80,21 @@ class decisionTree:
         """ inbetween_vals generates thresholds based on middle point between unique values  
         whole_x is entire column vector of feature values 
         y is the albel 
-        """ 
-        potential_vals = np.unique(whole_x) 
+        """  
+        u_vals  = np.unique(whole_x) 
+        if self.num_sample: 
+            u_vals  = np.unique(whole_x) 
+            potential_vals = np.zeros((self.num_sample,1))
+            min_u = min(u_vals) 
+            counter = 0
+            for i in range(0,len(u_vals),math.ceil(len(u_vals)/self.num_sample) ): 
+                potential_vals[counter] =  u_vals[i] 
+                counter +=1 
+        else: 
+            potential_vals = u_vals 
         inbetween = list()   
-        inbetween = potential_vals
-        """
         for i in range(len(potential_vals) -1): 
             inbetween.append( (potential_vals[i] + potential_vals[i+1] )/2)   
-        """ 
         return inbetween
 
     def eval_cost(self,x,y,f1_val,f2_val):
@@ -120,16 +127,7 @@ class decisionTree:
             return real_labels.size*(out1 + out2)
         else:
             return 0
-    def get_common_label(self,y):   
-        #no longer used funciton that was meant to get the mode of my labels 
-        u_labels = np.unique(y)
-        class_counts = np.zeros((len(u_labels),2))  
-        for i,label in enumerate(u_labels): 
-            class_counts[i,0] = label 
-            class_counts[i,1] = np.sum(y==label)
-        class_counts.sort(axis=1)  
-        return class_counts[-1,1]
-class DaRDecisionTree:
+class DaRDecisionTree(decisionTree):
     def __init__(self,depth=2):  
         self.depth = depth 
         self.decision =0 
@@ -168,14 +166,6 @@ class DaRDecisionTree:
                 if b:
                     return  self.children[i].predict(x) 
 
-    def generate_unique_values(self,x):
-        """ Instead of computing thresholds each time let's pre compute them 
-        x: our feature matrix 
-        """
-        unique_list = list() 
-        for i in range( x.shape[1]):
-            unique_list.append( self.inbetween_vals(x[:,i]))  
-        return unique_list
     
     def get_best(self,X,Y):  
         """ in this case were only splititng on a single variable 
