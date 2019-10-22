@@ -50,9 +50,9 @@ for train_index, test_index in rkf.split(x):
     f.write(f"my model AUC: {my_auc}  VS sklearn AUC:{test_mdl_auc} -------- \n") 
 f.close() 
 """  Observations 
-1) The quaterney decision tree outperforms the simple Decision tree for depths of 1 and 2 
+1) The quaternaryy decision tree outperforms the simple Decision tree for depths of 1 and 2 
 2)Looking at the  AUC in cross valdiation we notice that the AUC of sklearns decision tree changes dramatically 
-while the quaterny decision tree doesn't vary as much. This is a rather interesting observation as the 
-quaterny decision tree has more complicated comparisons. It may also be that the complicated  comparisons help identify 
+while the quaternaryy decision tree doesn't vary as much. This is a rather interesting observation as the 
+quaternaryy decision tree has more complicated comparisons. It may also be that the complicated  comparisons help identify 
 patterns that better represent the data when compared to a single threshold .
 """

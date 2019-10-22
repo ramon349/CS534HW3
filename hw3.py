@@ -10,7 +10,11 @@ class QuarternaryDecisionTree:
         self.depth =depth
         self.children = None 
         self.num_sample = 0 
-    def fit(self,x,y,num_sample=None):  
+    def fit(self,x,y,num_sample=None):   
+        """ fits a decision tree. 
+        Note the num_sample option allows for subsampling 
+        if num_sample =10 only 10 values will be considered for thresholds instead of all unique values
+        """
         if self.depth ==0:  
             #handle case where we've reached the bottom 
             self.decision = np.mean(y) #sstats.mode(y).mode
